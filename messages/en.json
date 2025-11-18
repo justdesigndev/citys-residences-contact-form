@@ -75,7 +75,7 @@
                     }
                 },
                 "consentSms": {
-                    "placeholder": "SMS"
+                    "placeholder": "SMS / WhatsApp"
                 },
                 "consentEmail": {
                     "placeholder": "Email"

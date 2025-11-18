@@ -52,7 +52,7 @@ export function Footer() {
             </span>
           </div>
           <div className='lg:col-span-7 xl:col-span-6 flex flex-col items-center lg:flex-row justify-between gap-5'>
-            <span className='block w-full md:w-[70vw] lg:w-[46vw] xl:w-[42.5vw] 2xl:w-[32vw] text-center lg:text-left text-[0.8rem]'>
+            <span className='block w-full md:w-[70vw] lg:w-[46vw] xl:w-[42.5vw] 2xl:w-[32vw] text-center lg:text-left text-[0.6rem] opacity-30'>
               Citys Residences, HAYAT GAYRİMENKUL GELİŞTİRME TURİZM İNŞAAT VE TAAHHÜT A.Ş.&apos;nin tescilli bir
               markasıdır. Markanın tüm kullanım hakları, operasyonel faaliyetleri ve temsiliyeti, ilgili muvafakatname
               kapsamında CITYS GAYRİMENKUL GELİŞTİRME ANONİM ŞİRKETİ tarafından yürütülmektedir.
