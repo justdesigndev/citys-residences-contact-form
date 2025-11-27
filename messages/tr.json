@@ -40,6 +40,18 @@
                         "email": "Lütfen geçerli bir e-posta adresi giriniz"
                     }
                 },
+                "country": {
+                    "placeholder": "Ülke",
+                    "errors": {
+                        "required": "Zorunlu alan"
+                    }
+                },
+                "city": {
+                    "placeholder": "Şehir",
+                    "errors": {
+                        "required": "Zorunlu alan"
+                    }
+                },
                 "residenceType": {
                     "placeholder": "Tercih Edilen Konut Türü",
                     "errors": {
@@ -88,6 +100,7 @@
                 "default": "GÖNDER",
                 "sending": "GÖNDERİLİYOR..."
             },
+            "loading": "Yükleniyor...",
             "messages": {
                 "error": "Form gönderilirken hata oluştu",
                 "success": "Form başarıyla gönderildi",

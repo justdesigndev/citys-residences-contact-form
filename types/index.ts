@@ -227,6 +227,8 @@ export interface FormTranslations {
       }
     }
     email: { placeholder: string; errors: { required: string; email: string } }
+    country: { placeholder: string; errors: { required: string } }
+    city: { placeholder: string; errors: { required: string } }
     residenceType: { placeholder: string; errors: { required: string } }
     howDidYouHearAboutUs: {
       placeholder: string
@@ -244,6 +246,7 @@ export interface FormTranslations {
     default: string
     sending: string
   }
+  loading: string
   messages: {
     error: string
     success: string

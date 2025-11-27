@@ -5,6 +5,10 @@ const withNextIntl = createNextIntlPlugin()
 
 const nextConfig = {
   reactStrictMode: true,
+  serverExternalPackages: ["@countrystatecity/countries"],
+  experimental: {
+    serverComponentsExternalPackages: ["@countrystatecity/countries"],
+  },
   redirects: async () => {
     return [
       {

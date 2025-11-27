@@ -14,6 +14,7 @@ export const config = {
 
     // Enable redirects that add missing locales
     // (e.g. `/pathnames` -> `/en/pathnames`)
-    "/((?!_next|_vercel|.*\\..*).*)",
+    // Exclude api routes from locale middleware
+    "/((?!api|_next|_vercel|.*\\..*).*)",
   ],
 }

@@ -1,9 +1,10 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation } from "@tanstack/react-query"
+import { ICountry, IState } from "country-state-city"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { useLocale } from "next-intl"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef } from "react"
 import { Control, useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -39,6 +40,8 @@ const getFormSchema = (translations: FormTranslations) =>
         .string()
         .min(1, { message: translations.inputs.email.errors.required })
         .email({ message: translations.inputs.email.errors.email }),
+      country: z.string().min(1, { message: translations.inputs.country.errors.required }),
+      city: z.string().min(1, { message: translations.inputs.city.errors.required }),
       residenceType: z.string().min(1, { message: translations.inputs.residenceType.errors.required }),
       howDidYouHearAboutUs: z.string().min(1, { message: translations.inputs.howDidYouHearAboutUs.errors.required }),
       message: z.string(),
@@ -126,7 +129,7 @@ interface UseFormMessage {
 }
 
 const useFormMessage = (timeout = 5000): UseFormMessage => {
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [message, setMessage] = React.useState<{ type: "success" | "error"; text: string } | null>(null)
 
   const clearMessage = useCallback(() => setMessage(null), [])
 
@@ -143,18 +146,41 @@ const useFormMessage = (timeout = 5000): UseFormMessage => {
 
 interface FormContactProps {
   translations: FormTranslations
+  countries: ICountry[]
 }
 
-export function ContactForm({ translations }: FormContactProps) {
+export function ContactForm({ translations, countries }: FormContactProps) {
   const { showMessage } = useFormMessage()
   const locale = useLocale()
-  const [successDialog, setSuccessDialog] = useState(false)
+  const [successDialog, setSuccessDialog] = React.useState(false)
 
   const residenceTypeDropdownRef = useRef<DropdownMenuCheckboxesRef>(null)
 
   const resetDropdowns = () => {
     residenceTypeDropdownRef.current?.reset()
   }
+
+  // Helper to get localized country name
+  const getLocalizedCountryName = useCallback(
+    (code: string, name: string) => {
+      try {
+        const regionNames = new Intl.DisplayNames([locale], { type: "region" })
+        return regionNames.of(code) || name
+      } catch {
+        return name
+      }
+    },
+    [locale]
+  )
+
+  // Sort countries by localized name
+  const sortedCountries = useMemo(() => {
+    return [...countries].sort((a, b) => {
+      const nameA = getLocalizedCountryName(a.isoCode, a.name)
+      const nameB = getLocalizedCountryName(b.isoCode, b.name)
+      return nameA.localeCompare(nameB, locale)
+    })
+  }, [countries, getLocalizedCountryName, locale])
 
   const form = useForm<FormValues>({
     resolver: zodResolver(getFormSchema(translations)),
@@ -164,6 +190,8 @@ export function ContactForm({ translations }: FormContactProps) {
       countryCode: "90", // Default to Turkey country code
       phone: "",
       email: "",
+      country: "",
+      city: "",
       residenceType: "",
       howDidYouHearAboutUs: "",
       message: "",
@@ -178,6 +206,28 @@ export function ContactForm({ translations }: FormContactProps) {
   })
 
   const residenceTypeValue = form.watch("residenceType")
+
+  // Track selected country code for API calls
+  const [selectedCountryCode, setSelectedCountryCode] = React.useState<string>("")
+
+  // Fetch states/cities using React Query
+  const { data: statesData = [], isLoading: isLoadingCities } = useQuery<IState[]>({
+    queryKey: ["states", selectedCountryCode],
+    queryFn: async () => {
+      const response = await fetch(`/api/cities?countryCode=${selectedCountryCode}`)
+      if (!response.ok) {
+        throw new Error("Failed to fetch states")
+      }
+      return response.json()
+    },
+    enabled: !!selectedCountryCode,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  })
+
+  // Sort states/cities alphabetically
+  const sortedCities = useMemo(() => {
+    return [...statesData].sort((a, b) => a.name.localeCompare(b.name, locale))
+  }, [statesData, locale])
 
   const mutation = useMutation({
     mutationFn: async (data: FormValues) => {
@@ -247,11 +297,6 @@ export function ContactForm({ translations }: FormContactProps) {
   )
 
   useEffect(() => {
-    console.log("form errors", form.formState.errors)
-    console.log("form values", form.getValues())
-  }, [form.formState.errors, form])
-
-  useEffect(() => {
     form.register("phone", {
       onChange: () => form.trigger("phone"), // Validate phone on change
     })
@@ -265,7 +310,7 @@ export function ContactForm({ translations }: FormContactProps) {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
-          className='font-halenoir space-y-6 lg:space-y-6'
+          className='font-halenoir space-y-6'
           noValidate
         >
           <div className='flex flex-col lg:grid grid-flow-col gap-6 lg:gap-4 md:grid-cols-2'>
@@ -299,6 +344,87 @@ export function ContactForm({ translations }: FormContactProps) {
                 type='email'
                 placeholder={`${locale === "tr" ? "E-Posta" : "Email"}*`}
                 className='col-span-1 md:col-span-1'
+              />
+            </div>
+          </div>
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-4'>
+            <div className='space-y-1'>
+              <FormField
+                control={form.control}
+                name='country'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          // Find the country to get its code
+                          const country = sortedCountries.find(
+                            (c) => getLocalizedCountryName(c.isoCode, c.name) === value
+                          )
+                          if (country) {
+                            setSelectedCountryCode(country.isoCode)
+                          }
+                          field.onChange(value)
+                          form.setValue("city", "") // Reset city when country changes
+                        }}
+                      >
+                        <SelectTrigger className='h-10 w-full border border-bricky-brick-light px-2 lg:px-4 rounded-md text-base md:text-sm'>
+                          <SelectValue placeholder={`${translations.inputs.country.placeholder}*`} />
+                        </SelectTrigger>
+                        <SelectContent className='w-[var(--radix-select-trigger-width)] border-bricky-brick-light max-h-[300px]'>
+                          {sortedCountries.map((country) => (
+                            <SelectItem
+                              key={country.isoCode}
+                              value={getLocalizedCountryName(country.isoCode, country.name)}
+                              className='text-base md:text-sm cursor-pointer hover:bg-bricky-brick-light hover:text-black focus:bg-bricky-brick-light focus:text-black'
+                            >
+                              {getLocalizedCountryName(country.isoCode, country.name)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className='space-y-1'>
+              <FormField
+                control={form.control}
+                name='city'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={!selectedCountryCode || isLoadingCities}
+                      >
+                        <SelectTrigger className='h-10 w-full border border-bricky-brick-light px-2 lg:px-4 rounded-md text-base md:text-sm disabled:opacity-50'>
+                          <SelectValue
+                            placeholder={
+                              isLoadingCities ? translations.loading : `${translations.inputs.city.placeholder}*`
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent className='w-[var(--radix-select-trigger-width)] border-bricky-brick-light max-h-[300px]'>
+                          {sortedCities.map((city) => (
+                            <SelectItem
+                              key={city.name.toString()}
+                              value={city.name.toString()}
+                              className='text-base md:text-sm cursor-pointer hover:bg-bricky-brick-light hover:text-black focus:bg-bricky-brick-light focus:text-black'
+                            >
+                              {city.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
           </div>
@@ -375,9 +501,7 @@ export function ContactForm({ translations }: FormContactProps) {
               )}
             />
           </div>
-
           <ConsentCheckboxes form={form} control={form.control} />
-
           <button type='submit' disabled={mutation.isPending} className='flex relative'>
             <AnimatedButton text={translations.submit.default} />
             {mutation.isPending && (

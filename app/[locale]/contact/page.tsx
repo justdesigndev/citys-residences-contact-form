@@ -1,14 +1,15 @@
-import { useLocale, useTranslations } from "next-intl"
+import { getTranslations } from "next-intl/server"
 import Image from "next/image"
 
 import { ContactForm } from "@/components/form-contact"
 import { Logo } from "@/components/icons"
 import { LocaleSwitcher } from "@/components/locale-switcher"
+import { fetchCountries } from "@/lib/api/locations"
 import { FormTranslations } from "@/types"
 
-export default function Contact() {
-  const t = useTranslations("contact")
-  const locale = useLocale()
+export default async function Contact({ params: { locale } }: { params: { locale: string } }) {
+  const t = await getTranslations({ locale, namespace: "contact" })
+  const countries = await fetchCountries()
 
   const formTranslations: FormTranslations = {
     inputs: {
@@ -33,6 +34,18 @@ export default function Contact() {
         errors: {
           required: t("form.inputs.email.errors.required"),
           email: t("form.inputs.email.errors.email"),
+        },
+      },
+      country: {
+        placeholder: t("form.inputs.country.placeholder"),
+        errors: {
+          required: t("form.inputs.country.errors.required"),
+        },
+      },
+      city: {
+        placeholder: t("form.inputs.city.placeholder"),
+        errors: {
+          required: t("form.inputs.city.errors.required"),
         },
       },
       residenceType: {
@@ -81,6 +94,7 @@ export default function Contact() {
       default: t("form.submit.default"),
       sending: t("form.submit.sending"),
     },
+    loading: t("form.loading"),
     messages: {
       error: t("form.messages.error"),
       success: t("form.messages.success"),
@@ -104,47 +118,47 @@ export default function Contact() {
   // )
 
   return (
-    <div className="flex flex-col xl:grid grid-cols-2">
-      <div className="px-4 lg:px-12 relative xl:fixed top-0 left-0 w-full bg-white z-10">
-        <div className="flex items-center justify-between xl:border-b border-bricky-brick-light py-4 xl:py-3">
-          <div className="opacity-0 pointer-events-none">
-            <LocaleSwitcher theme="dark" />
+    <div className='flex flex-col xl:grid grid-cols-2'>
+      <div className='px-4 lg:px-12 relative xl:fixed top-0 left-0 w-full bg-white z-10'>
+        <div className='flex items-center justify-between xl:border-b border-bricky-brick-light py-4 xl:py-3'>
+          <div className='opacity-0 pointer-events-none'>
+            <LocaleSwitcher theme='dark' />
           </div>
-          <div className="w-28 md:w-36">
-            <Logo fill="var(--bricky-brick)" />
+          <div className='w-28 md:w-36'>
+            <Logo fill='var(--bricky-brick)' />
           </div>
           <div>
-            <LocaleSwitcher theme="dark" />
+            <LocaleSwitcher theme='dark' />
           </div>
         </div>
       </div>
-      <div className="col-span-1 xl:h-screen flex flex-col">
-        <div className="flex flex-col items-center justify-center xl:items-start gap-6 lg:gap-8 px-4 lg:px-12 pb-8 lg:pb-0 xl:mt-40 pt-6 lg:pt-0">
-          <div className="xl:hidden col-span-1 -mx-4 lg:-mx-12 py-4 lg:py-8 px-4 lg:px-64 xl:px-32 flex items-center justify-center">
+      <div className='col-span-1 xl:h-screen flex flex-col'>
+        <div className='flex flex-col items-center justify-center xl:items-start gap-6 lg:gap-8 px-4 lg:px-12 pb-8 lg:pb-0 xl:mt-40 pt-6 lg:pt-0'>
+          <div className='xl:hidden col-span-1 -mx-4 lg:-mx-12 py-4 lg:py-8 px-4 lg:px-64 xl:px-32 flex items-center justify-center'>
             {locale === "tr" ? (
-              <Image src="/img/yasama-sanati.png" alt="Contact Form Image" width={1500} height={1500} />
+              <Image src='/img/yasama-sanati.png' alt='Contact Form Image' width={1500} height={1500} />
             ) : (
-              <div className="w-full h-full flex items-center justify-center px-8 xl:px-20">
-                <Image src="/img/art-of-living.png" alt="Contact Form Image" width={1500} height={1500} />
+              <div className='w-full h-full flex items-center justify-center px-8 xl:px-20'>
+                <Image src='/img/art-of-living.png' alt='Contact Form Image' width={1500} height={1500} />
               </div>
             )}
           </div>
-          <h2 className="text-neutral-900 text-base lg:text-sm font-normal font-halenoir text-left lg:text-center xl:text-left leading-normal">
+          <h2 className='text-neutral-900 text-base lg:text-sm font-normal font-halenoir text-left lg:text-center xl:text-left leading-normal'>
             {t.rich("description", {
-              br: () => <br className="hidden lg:block" />,
+              br: () => <br className='hidden lg:block' />,
             })}
           </h2>
-          <div className="lg:px-12 xl:px-0 pb-0 xl:pb-24">
-            <ContactForm translations={formTranslations} />
+          <div className='lg:px-12 xl:px-0 pb-0 xl:pb-24'>
+            <ContactForm translations={formTranslations} countries={countries} />
           </div>
         </div>
       </div>
-      <div className="col-span-1 fixed top-0 right-0 w-1/2 h-full hidden xl:flex items-center px-16">
+      <div className='col-span-1 fixed top-0 right-0 w-1/2 h-full hidden xl:flex items-center px-16'>
         {locale === "tr" ? (
-          <Image src="/img/yasama-sanati.png" alt="Contact Form Image" width={1500} height={1500} />
+          <Image src='/img/yasama-sanati.png' alt='Contact Form Image' width={1500} height={1500} />
         ) : (
-          <div className="w-full h-full flex items-center justify-center px-20">
-            <Image src="/img/art-of-living.png" alt="Contact Form Image" width={1500} height={1500} />
+          <div className='w-full h-full flex items-center justify-center px-20'>
+            <Image src='/img/art-of-living.png' alt='Contact Form Image' width={1500} height={1500} />
           </div>
         )}
       </div>

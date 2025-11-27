@@ -51,14 +51,15 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange, phoneIn
   const countryOptions = (
     <>
       {defaultCountries.map((c) => {
+        const country = parseCountry(c)
         return (
           <SelectItem
             className='focus:bg-neutral-50 focus:text-neutral-950 cursor-pointer px-4 py-2 font-halenoir text-base md:text-sm'
-            key={parseCountry(c).dialCode.toString()}
-            value={parseCountry(c).dialCode.toString()}
+            key={country.iso2}
+            value={country.iso2}
           >
-            {`${parseCountry(c).name.toString()} (+${parseCountry(c).dialCode.toString()})`}
-            {/* {parseCountry(c).dialCode.toString()} */}
+            {`${country.name} (+${country.dialCode})`}
+            {/* {country.dialCode} */}
           </SelectItem>
         )
       })}
@@ -68,13 +69,9 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange, phoneIn
   return (
     <div className='flex items-center gap-2'>
       <Select
-        onValueChange={(dialCodeValue) => {
-          const selectedCountry = defaultCountries.find((c) => {
-            const parsed = parseCountry(c)
-            return parsed.dialCode.toString() === dialCodeValue
-          })
-          if (selectedCountry) {
-            phoneInput.setCountry(selectedCountry[1].toLowerCase())
+        onValueChange={(value) => {
+          if (value) {
+            phoneInput.setCountry(value)
             // Update country code when country changes
             setTimeout(() => {
               const dialCode = phoneInput.country.dialCode.toString()
@@ -83,7 +80,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange, phoneIn
             }, 0)
           }
         }}
-        value={phoneInput.country.dialCode.toString()}
+        value={phoneInput.country.iso2}
       >
         <SelectTrigger className='w-24 h-10 rounded-md text-bricky-brick font-medium cursor-pointer text-base md:text-sm border border-bricky-brick-light'>
           <SelectValue placeholder='Code'>+{phoneInput.country.dialCode}</SelectValue>
