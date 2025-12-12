@@ -81,7 +81,7 @@ export function Combobox({
           className={cn("w-full justify-between", triggerClassName, className)}
         >
           {selectedOption ? selectedOption.label : placeholder}
-          <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+          <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50 text-bricky-brick' />
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -126,7 +126,12 @@ export function Combobox({
                   className={itemClassName}
                 >
                   {option.label}
-                  <Check className={cn("ml-auto h-4 w-4", value === option.value ? "opacity-100" : "opacity-0")} />
+                  <Check
+                    className={cn(
+                      "ml-auto h-4 w-4 text-bricky-brick",
+                      value === option.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
                 </CommandItem>
               ))}
             </CommandGroup>
