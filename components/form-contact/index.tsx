@@ -24,6 +24,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Combobox, ComboboxOption } from "@/components/ui/combobox"
 import { Textarea } from "@/components/ui/textarea"
 import { submitContactForm } from "@/lib/api/submit-contact-form"
 import { isPhoneValid } from "@/lib/utils"
@@ -352,42 +353,57 @@ export function ContactForm({ translations, countries }: FormContactProps) {
               <FormField
                 control={form.control}
                 name='country'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={(value) => {
-                          // Find the country to get its code
-                          const country = sortedCountries.find(
-                            (c) => getLocalizedCountryName(c.isoCode, c.name) === value
-                          )
-                          if (country) {
-                            setSelectedCountryCode(country.isoCode)
-                          }
-                          field.onChange(value)
-                          form.setValue("city", "") // Reset city when country changes
-                        }}
-                      >
-                        <SelectTrigger className='h-10 w-full border border-bricky-brick-light px-2 lg:px-4 rounded-md text-base md:text-sm'>
-                          <SelectValue placeholder={`${translations.inputs.country.placeholder}*`} />
-                        </SelectTrigger>
-                        <SelectContent className='w-[var(--radix-select-trigger-width)] border-bricky-brick-light max-h-[300px]'>
-                          {sortedCountries.map((country) => (
-                            <SelectItem
-                              key={country.isoCode}
-                              value={getLocalizedCountryName(country.isoCode, country.name)}
-                              className='text-base md:text-sm cursor-pointer hover:bg-bricky-brick-light hover:text-black focus:bg-bricky-brick-light focus:text-black'
-                            >
-                              {getLocalizedCountryName(country.isoCode, country.name)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  // Find Turkey and separate it as priority option
+                  const turkeyCountry = sortedCountries.find((country) => country.isoCode === "TR")
+                  const turkeyOption: ComboboxOption | undefined = turkeyCountry
+                    ? {
+                        value: getLocalizedCountryName(turkeyCountry.isoCode, turkeyCountry.name),
+                        label: getLocalizedCountryName(turkeyCountry.isoCode, turkeyCountry.name),
+                      }
+                    : undefined
+
+                  // Convert countries to ComboboxOption format, excluding Turkey
+                  const countryOptions: ComboboxOption[] = sortedCountries
+                    .filter((country) => country.isoCode !== "TR")
+                    .map((country) => ({
+                      value: getLocalizedCountryName(country.isoCode, country.name),
+                      label: getLocalizedCountryName(country.isoCode, country.name),
+                    }))
+
+                  return (
+                    <FormItem>
+                      {/* <FormLabel className='text-neutral-950 font-normal leading-none block text-base md:text-sm'>
+                        {`${translations.inputs.country.placeholder}*`}
+                      </FormLabel> */}
+                      <FormControl>
+                        <Combobox
+                          options={countryOptions}
+                          priorityOptions={turkeyOption ? [turkeyOption] : []}
+                          value={field.value}
+                          onValueChange={(value) => {
+                            // Find the country to get its code (check both priority and regular options)
+                            const country = sortedCountries.find(
+                              (c) => getLocalizedCountryName(c.isoCode, c.name) === value
+                            )
+                            if (country) {
+                              setSelectedCountryCode(country.isoCode)
+                            }
+                            field.onChange(value)
+                            form.setValue("city", "") // Reset city when country changes
+                          }}
+                          placeholder={`${translations.inputs.country.placeholder}*`}
+                          searchPlaceholder={translations.inputs.country.placeholder || "Search country..."}
+                          emptyMessage='No country found.'
+                          triggerClassName='h-10 w-full border border-bricky-brick-light px-2 lg:px-4 rounded-md text-base md:text-sm'
+                          contentClassName='border-bricky-brick-light max-h-[300px]'
+                          itemClassName='text-base md:text-sm cursor-pointer hover:bg-bricky-brick-light hover:text-black focus:bg-bricky-brick-light focus:text-black'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
               />
             </div>
             <div className='space-y-1'>
