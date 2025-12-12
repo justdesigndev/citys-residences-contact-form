@@ -225,7 +225,7 @@ export function ContactForm({ translations, countries }: FormContactProps) {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   })
 
-  // Sort states/cities alphabetically
+  // Sort states/cities alphabetically and separate Istanbul as priority
   const sortedCities = useMemo(() => {
     return [...statesData].sort((a, b) => a.name.localeCompare(b.name, locale))
   }, [statesData, locale])
@@ -410,37 +410,52 @@ export function ContactForm({ translations, countries }: FormContactProps) {
               <FormField
                 control={form.control}
                 name='city'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={!selectedCountryCode || isLoadingCities}
-                      >
-                        <SelectTrigger className='h-10 w-full border border-bricky-brick-light px-2 lg:px-4 rounded-md text-base md:text-sm disabled:opacity-50'>
-                          <SelectValue
-                            placeholder={
-                              isLoadingCities ? translations.loading : `${translations.inputs.city.placeholder}*`
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent className='w-[var(--radix-select-trigger-width)] border-bricky-brick-light max-h-[300px]'>
-                          {sortedCities.map((city) => (
-                            <SelectItem
-                              key={city.name.toString()}
-                              value={city.name.toString()}
-                              className='text-base md:text-sm cursor-pointer hover:bg-bricky-brick-light hover:text-black focus:bg-bricky-brick-light focus:text-black'
-                            >
-                              {city.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  // Find Istanbul and separate it as priority option
+                  const istanbulCity = sortedCities.find(
+                    (city) => city.name.toLowerCase() === "istanbul" || city.name.toLowerCase() === "i̇stanbul"
+                  )
+                  const istanbulOption: ComboboxOption | undefined = istanbulCity
+                    ? {
+                        value: istanbulCity.name,
+                        label: istanbulCity.name,
+                      }
+                    : undefined
+
+                  // Convert cities to ComboboxOption format, excluding Istanbul
+                  const cityOptions: ComboboxOption[] = sortedCities
+                    .filter((city) => {
+                      const cityNameLower = city.name.toLowerCase()
+                      return cityNameLower !== "istanbul" && cityNameLower !== "i̇stanbul"
+                    })
+                    .map((city) => ({
+                      value: city.name,
+                      label: city.name,
+                    }))
+
+                  return (
+                    <FormItem>
+                      <FormControl>
+                        <Combobox
+                          options={cityOptions}
+                          priorityOptions={istanbulOption ? [istanbulOption] : []}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={!selectedCountryCode || isLoadingCities}
+                          placeholder={
+                            isLoadingCities ? translations.loading : `${translations.inputs.city.placeholder}*`
+                          }
+                          searchPlaceholder={translations.inputs.city.placeholder || "Search city..."}
+                          emptyMessage='No city found.'
+                          triggerClassName='h-10 w-full border border-bricky-brick-light px-2 lg:px-4 rounded-md text-base md:text-sm disabled:opacity-50'
+                          contentClassName='border-bricky-brick-light max-h-[300px]'
+                          itemClassName='text-base md:text-sm cursor-pointer hover:bg-bricky-brick-light hover:text-black focus:bg-bricky-brick-light focus:text-black'
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
               />
             </div>
           </div>
