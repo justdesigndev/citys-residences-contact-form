@@ -45,6 +45,7 @@ const getFormSchema = (translations: FormTranslations) =>
       city: z.string().min(1, { message: translations.inputs.city.errors.required }),
       residenceType: z.string().min(1, { message: translations.inputs.residenceType.errors.required }),
       howDidYouHearAboutUs: z.string().min(1, { message: translations.inputs.howDidYouHearAboutUs.errors.required }),
+      profession: z.string(),
       message: z.string(),
       consent: z.boolean().refine((data) => data === true, { message: translations.inputs.consent.errors.required }),
       consentElectronicMessage: z.boolean().refine((data) => data === true, {
@@ -195,6 +196,7 @@ export function ContactForm({ translations, countries }: FormContactProps) {
       city: "",
       residenceType: "",
       howDidYouHearAboutUs: "",
+      profession: "",
       message: "",
       consent: false,
       consentElectronicMessage: false,
@@ -330,7 +332,10 @@ export function ContactForm({ translations, countries }: FormContactProps) {
               >
                 {`${locale === "tr" ? "Telefon Numarası" : "Telephone Number"}*`}
               </FormLabel>
-              <InternationalPhoneInputComponent form={form} />
+              <InternationalPhoneInputComponent
+                form={form}
+                searchPlaceholder={translations.inputs.country.searchPlaceholder}
+              />
               {/* Hidden field to ensure countryCode is properly tracked by react-hook-form */}
               <FormField
                 control={form.control}
@@ -349,114 +354,135 @@ export function ContactForm({ translations, countries }: FormContactProps) {
             </div>
           </div>
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-4'>
-            <div className='space-y-1'>
-              <FormField
+            <div className='grid grid-flow-col'>
+              <FormInput
                 control={form.control}
-                name='country'
-                render={({ field }) => {
-                  // Find Turkey and separate it as priority option
-                  const turkeyCountry = sortedCountries.find((country) => country.isoCode === "TR")
-                  const turkeyOption: ComboboxOption | undefined = turkeyCountry
-                    ? {
-                        value: getLocalizedCountryName(turkeyCountry.isoCode, turkeyCountry.name),
-                        label: getLocalizedCountryName(turkeyCountry.isoCode, turkeyCountry.name),
-                      }
-                    : undefined
-
-                  // Convert countries to ComboboxOption format, excluding Turkey
-                  const countryOptions: ComboboxOption[] = sortedCountries
-                    .filter((country) => country.isoCode !== "TR")
-                    .map((country) => ({
-                      value: getLocalizedCountryName(country.isoCode, country.name),
-                      label: getLocalizedCountryName(country.isoCode, country.name),
-                    }))
-
-                  return (
-                    <FormItem>
-                      {/* <FormLabel className='text-neutral-950 font-normal leading-none block text-base md:text-sm'>
-                        {`${translations.inputs.country.placeholder}*`}
-                      </FormLabel> */}
-                      <FormControl>
-                        <Combobox
-                          options={countryOptions}
-                          priorityOptions={turkeyOption ? [turkeyOption] : []}
-                          value={field.value}
-                          onValueChange={(value) => {
-                            // Find the country to get its code (check both priority and regular options)
-                            const country = sortedCountries.find(
-                              (c) => getLocalizedCountryName(c.isoCode, c.name) === value
-                            )
-                            if (country) {
-                              setSelectedCountryCode(country.isoCode)
-                            }
-                            field.onChange(value)
-                            form.setValue("city", "") // Reset city when country changes
-                          }}
-                          placeholder={`${translations.inputs.country.placeholder}*`}
-                          searchPlaceholder={translations.inputs.country.placeholder || "Search country..."}
-                          emptyMessage='No country found.'
-                          triggerClassName='h-10 w-full border border-bricky-brick-light px-2 lg:px-4 rounded-md text-base md:text-sm'
-                          contentClassName='border-bricky-brick-light max-h-[300px]'
-                          itemClassName='text-base md:text-sm cursor-pointer hover:bg-bricky-brick-light hover:text-black focus:bg-bricky-brick-light focus:text-black'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )
-                }}
+                name='profession'
+                placeholder={translations.inputs.profession.placeholder}
               />
             </div>
-            <div className='space-y-1'>
-              <FormField
-                control={form.control}
-                name='city'
-                render={({ field }) => {
-                  // Find Istanbul and separate it as priority option
-                  const istanbulCity = sortedCities.find(
-                    (city) => city.name.toLowerCase() === "istanbul" || city.name.toLowerCase() === "i̇stanbul"
-                  )
-                  const istanbulOption: ComboboxOption | undefined = istanbulCity
-                    ? {
-                        value: istanbulCity.name,
-                        label: istanbulCity.name,
-                      }
-                    : undefined
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-2'>
+              <div className='space-y-1'>
+                <FormLabel
+                  className='text-neutral-950 font-normal leading-none block text-base md:text-sm'
+                  htmlFor='phone'
+                >
+                  {`${locale === "tr" ? "Ülke" : "Country"}*`}
+                </FormLabel>
+                <FormField
+                  control={form.control}
+                  name='country'
+                  render={({ field }) => {
+                    // Find Turkey and separate it as priority option
+                    const turkeyCountry = sortedCountries.find((country) => country.isoCode === "TR")
+                    const turkeyOption: ComboboxOption | undefined = turkeyCountry
+                      ? {
+                          value: getLocalizedCountryName(turkeyCountry.isoCode, turkeyCountry.name),
+                          label: getLocalizedCountryName(turkeyCountry.isoCode, turkeyCountry.name),
+                        }
+                      : undefined
 
-                  // Convert cities to ComboboxOption format, excluding Istanbul
-                  const cityOptions: ComboboxOption[] = sortedCities
-                    .filter((city) => {
-                      const cityNameLower = city.name.toLowerCase()
-                      return cityNameLower !== "istanbul" && cityNameLower !== "i̇stanbul"
-                    })
-                    .map((city) => ({
-                      value: city.name,
-                      label: city.name,
-                    }))
+                    // Convert countries to ComboboxOption format, excluding Turkey
+                    const countryOptions: ComboboxOption[] = sortedCountries
+                      .filter((country) => country.isoCode !== "TR")
+                      .map((country) => ({
+                        value: getLocalizedCountryName(country.isoCode, country.name),
+                        label: getLocalizedCountryName(country.isoCode, country.name),
+                      }))
 
-                  return (
-                    <FormItem>
-                      <FormControl>
-                        <Combobox
-                          options={cityOptions}
-                          priorityOptions={istanbulOption ? [istanbulOption] : []}
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={!selectedCountryCode || isLoadingCities}
-                          placeholder={
-                            isLoadingCities ? translations.loading : `${translations.inputs.city.placeholder}*`
-                          }
-                          searchPlaceholder={translations.inputs.city.placeholder || "Search city..."}
-                          emptyMessage='No city found.'
-                          triggerClassName='h-10 w-full border border-bricky-brick-light px-2 lg:px-4 rounded-md text-base md:text-sm disabled:opacity-50'
-                          contentClassName='border-bricky-brick-light max-h-[300px]'
-                          itemClassName='text-base md:text-sm cursor-pointer hover:bg-bricky-brick-light hover:text-black focus:bg-bricky-brick-light focus:text-black'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )
-                }}
-              />
+                    return (
+                      <FormItem>
+                        {/* <FormLabel className='text-neutral-950 font-normal leading-none block text-base md:text-sm'>
+                        {`${translations.inputs.country.placeholder}*`}
+                      </FormLabel> */}
+                        <FormControl>
+                          <Combobox
+                            options={countryOptions}
+                            priorityOptions={turkeyOption ? [turkeyOption] : []}
+                            value={field.value}
+                            onValueChange={(value) => {
+                              // Find the country to get its code (check both priority and regular options)
+                              const country = sortedCountries.find(
+                                (c) => getLocalizedCountryName(c.isoCode, c.name) === value
+                              )
+                              if (country) {
+                                setSelectedCountryCode(country.isoCode)
+                              }
+                              field.onChange(value)
+                              form.setValue("city", "") // Reset city when country changes
+                            }}
+                            placeholder={`${translations.inputs.country.placeholder}*`}
+                            searchPlaceholder={translations.inputs.country.placeholder || "Search country..."}
+                            emptyMessage='No country found.'
+                            triggerClassName='h-10 w-full border border-bricky-brick-light px-2 lg:px-4 rounded-md text-base md:text-sm'
+                            contentClassName='border-bricky-brick-light max-h-[300px]'
+                            itemClassName='text-base md:text-sm cursor-pointer hover:bg-bricky-brick-light hover:text-black focus:bg-bricky-brick-light focus:text-black'
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )
+                  }}
+                />
+              </div>
+              <div className='space-y-1'>
+                <FormLabel
+                  className='text-neutral-950 font-normal leading-none block text-base md:text-sm'
+                  htmlFor='phone'
+                >
+                  {`${locale === "tr" ? "Şehir" : "City"}*`}
+                </FormLabel>
+                <FormField
+                  control={form.control}
+                  name='city'
+                  render={({ field }) => {
+                    // Find Istanbul and separate it as priority option
+                    const istanbulCity = sortedCities.find(
+                      (city) => city.name.toLowerCase() === "istanbul" || city.name.toLowerCase() === "i̇stanbul"
+                    )
+                    const istanbulOption: ComboboxOption | undefined = istanbulCity
+                      ? {
+                          value: istanbulCity.name,
+                          label: istanbulCity.name,
+                        }
+                      : undefined
+
+                    // Convert cities to ComboboxOption format, excluding Istanbul
+                    const cityOptions: ComboboxOption[] = sortedCities
+                      .filter((city) => {
+                        const cityNameLower = city.name.toLowerCase()
+                        return cityNameLower !== "istanbul" && cityNameLower !== "i̇stanbul"
+                      })
+                      .map((city) => ({
+                        value: city.name,
+                        label: city.name,
+                      }))
+
+                    return (
+                      <FormItem>
+                        <FormControl>
+                          <Combobox
+                            options={cityOptions}
+                            priorityOptions={istanbulOption ? [istanbulOption] : []}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            disabled={!selectedCountryCode || isLoadingCities}
+                            placeholder={
+                              isLoadingCities ? translations.loading : `${translations.inputs.city.placeholder}*`
+                            }
+                            searchPlaceholder={translations.inputs.city.placeholder || "Search city..."}
+                            emptyMessage='No city found.'
+                            triggerClassName='h-10 w-full border border-bricky-brick-light px-2 lg:px-4 rounded-md text-base md:text-sm disabled:opacity-50'
+                            contentClassName='border-bricky-brick-light max-h-[300px]'
+                            itemClassName='text-base md:text-sm cursor-pointer hover:bg-bricky-brick-light hover:text-black focus:bg-bricky-brick-light focus:text-black'
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )
+                  }}
+                />
+              </div>
             </div>
           </div>
           <div className='flex flex-col lg:grid grid-cols-2 gap-6 lg:gap-4'>

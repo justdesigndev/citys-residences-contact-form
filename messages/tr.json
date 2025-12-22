@@ -41,13 +41,14 @@
                     }
                 },
                 "country": {
-                    "placeholder": "Ülke",
+                    "placeholder": "Ülke Seçiniz",
+                    "searchPlaceholder": "Ülke seçiniz",
                     "errors": {
                         "required": "Zorunlu alan"
                     }
                 },
                 "city": {
-                    "placeholder": "Şehir",
+                    "placeholder": "Şehir Seçiniz",
                     "errors": {
                         "required": "Zorunlu alan"
                     }
@@ -70,6 +71,9 @@
                         "billboard": "Billboard",
                         "newspaperMagazine": "Gazete / Dergi"
                     }
+                },
+                "profession": {
+                    "placeholder": "Meslek"
                 },
                 "message": {
                     "placeholder": "Mesajınız"

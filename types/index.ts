@@ -227,7 +227,11 @@ export interface FormTranslations {
       }
     }
     email: { placeholder: string; errors: { required: string; email: string } }
-    country: { placeholder: string; errors: { required: string } }
+    country: {
+      placeholder: string
+      errors: { required: string }
+      searchPlaceholder: string
+    }
     city: { placeholder: string; errors: { required: string } }
     residenceType: { placeholder: string; errors: { required: string } }
     howDidYouHearAboutUs: {
@@ -235,6 +239,7 @@ export interface FormTranslations {
       errors: { required: string }
       options: Record<string, string>
     }
+    profession: { placeholder: string }
     consent: { placeholder: string; errors: { required: string } }
     consentElectronicMessage: { placeholder: string; errors: { required: string } }
     consentSms: { placeholder: string }

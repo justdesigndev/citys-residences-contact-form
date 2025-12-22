@@ -42,6 +42,7 @@
                 },
                 "country": {
                     "placeholder": "Country",
+                    "searchPlaceholder": "Search country...",
                     "errors": {
                         "required": "Required field"
                     }
@@ -70,6 +71,9 @@
                         "billboard": "Billboard",
                         "newspaperMagazine": "Newspaper / Magazine"
                     }
+                },
+                "profession": {
+                    "placeholder": "Profession"
                 },
                 "message": {
                     "placeholder": "Message"

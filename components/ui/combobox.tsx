@@ -34,6 +34,7 @@ interface ComboboxProps {
   triggerClassName?: string
   contentClassName?: string
   itemClassName?: string
+  displayValue?: string // Custom display value for trigger (overrides selected option label)
 }
 
 export function Combobox({
@@ -49,6 +50,7 @@ export function Combobox({
   triggerClassName,
   contentClassName,
   itemClassName,
+  displayValue,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const triggerRef = React.useRef<HTMLButtonElement>(null)
@@ -80,7 +82,7 @@ export function Combobox({
           disabled={disabled}
           className={cn("w-full justify-between", triggerClassName, className)}
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          {displayValue ? displayValue : selectedOption ? selectedOption.label : placeholder}
           <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50 text-bricky-brick' />
         </Button>
       </PopoverTrigger>
