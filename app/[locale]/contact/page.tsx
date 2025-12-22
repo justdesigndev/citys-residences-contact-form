@@ -134,8 +134,8 @@ export default async function Contact({ params: { locale } }: { params: { locale
           </div>
         </div>
       </div>
-      <div className='col-span-1 xl:h-screen flex flex-col'>
-        <div className='flex flex-col items-center justify-center xl:items-start gap-6 lg:gap-8 px-4 lg:px-12 pb-8 lg:pb-0 xl:mt-40 pt-6 lg:pt-0'>
+      <div className='col-span-1 xl:min-h-screen flex flex-col'>
+        <div className='flex flex-col items-center justify-center xl:items-start gap-6 lg:gap-8 px-4 lg:px-12 pb-8 lg:pb-16 xl:pb-0 xl:mt-40 pt-6 lg:pt-0'>
           <div className='xl:hidden col-span-1 -mx-4 lg:-mx-12 py-4 lg:py-8 px-4 lg:px-64 xl:px-32 flex items-center justify-center'>
             {locale === "tr" ? (
               <Image src='/img/yasama-sanati.png' alt='Contact Form Image' width={1500} height={1500} />
